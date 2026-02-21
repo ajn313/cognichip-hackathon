@@ -178,10 +178,22 @@ module aes_key_mem(
       rcon_next  = 1'b0;
 
       // Extract words from the previous key.
-      w0 = prev_key0_reg[127 : 096];
-      w1 = prev_key0_reg[095 : 064];
-      w2 = prev_key0_reg[063 : 032];
-      w3 = prev_key0_reg[031 : 000];
+      // For AES-256, read from key_mem to access w[i-8]
+      if (keylen == AES_256_BIT_KEY && round_ctr_reg >= 2)
+        begin
+          // Read w[i-8] from previously stored round keys
+          w0 = key_mem[round_ctr_reg - 2][127 : 096];
+          w1 = key_mem[round_ctr_reg - 2][095 : 064];
+          w2 = key_mem[round_ctr_reg - 2][063 : 032];
+          w3 = key_mem[round_ctr_reg - 2][031 : 000];
+        end
+      else
+        begin
+          w0 = prev_key0_reg[127 : 096];
+          w1 = prev_key0_reg[095 : 064];
+          w2 = prev_key0_reg[063 : 032];
+          w3 = prev_key0_reg[031 : 000];
+        end
 
       w4 = prev_key1_reg[127 : 096];
       w5 = prev_key1_reg[095 : 064];
@@ -225,6 +237,7 @@ module aes_key_mem(
         begin
           if (round_ctr_reg == 0)
             begin
+              // Store first half of key as round key 0
               key_mem_new   = key[255 : 128];
               key_mem_we    = 1'b1;
               prev_key0_new = key[127 : 000];
@@ -233,12 +246,18 @@ module aes_key_mem(
               prev_key1_we  = 1'b1;
               rcon_set      = 1'b1;
             end
+          else if (round_ctr_reg == 1)
+            begin
+              // Store second half of key as round key 1
+              key_mem_new   = key[127 : 000];
+              key_mem_we    = 1'b1;
+              // Don't update prev_key registers or rcon
+            end
           else
             begin
-              if (round_ctr_reg[0] == 1)
+              if (round_ctr_reg[0] == 0)
                 begin
-                  // Odd round, use RotWord(SubWord()) + Rcon
-                  // XOR with words from prev_key0
+                  // Even round (2, 4, 6...), use RotWord(SubWord()) + Rcon
                   k0 = w0 ^ rotstw ^ rconw;
                   k1 = k0 ^ w1;
                   k2 = k1 ^ w2;
@@ -246,8 +265,7 @@ module aes_key_mem(
                 end
               else
                 begin
-                  // Even round, use SubWord() without rotation or Rcon  
-                  // XOR with words from prev_key0
+                  // Odd round (3, 5, 7...), use SubWord() without rotation or Rcon
                   k0 = w0 ^ trw;
                   k1 = k0 ^ w1;
                   k2 = k1 ^ w2;
@@ -262,7 +280,7 @@ module aes_key_mem(
               prev_key1_new = {k0, k1, k2, k3};
               prev_key1_we  = 1'b1;
 
-              if (round_ctr_reg[0] == 1)
+              if (round_ctr_reg[0] == 0)
                 rcon_next = 1'b1;
             end
         end
@@ -393,8 +411,15 @@ module aes_key_mem(
       if (keylen == AES_128_BIT_KEY)
         tmp_sboxw = prev_key1_reg[031 : 000];
       else
-        // For AES-256, always use the last word of prev_key1
-        tmp_sboxw = prev_key1_reg[031 : 000];
+        begin
+          // For AES-256:
+          // Round 2 is special (first generation, uses w7 from original key)
+          // All other rounds use most recent generated keys from prev_key1
+          if (round_ctr_reg == 4'd2)
+            tmp_sboxw = prev_key0_reg[031 : 000];
+          else
+            tmp_sboxw = prev_key1_reg[031 : 000];
+        end
     end // sbox_mux
 
 endmodule // aes_key_mem

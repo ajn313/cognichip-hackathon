@@ -215,9 +215,9 @@ module tb_aes_key_mem;
       tc_ctr = tc_ctr + 1;
       $display("*** Test case %0d: AES-256 key expansion", tc_ctr);
 
-      // Test vector from FIPS-197 Appendix A.3
-      // Key: 603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4
-      tb_key    = 256'h603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4;
+      // Test vector from FIPS-197 Appendix A.3 (Test Case 3)
+      // Key: 000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f
+      tb_key    = 256'h000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f;
       tb_keylen = AES_256_BIT_KEY;
       tb_init   = 1'b1;
       #CLK_PERIOD;
@@ -230,30 +230,96 @@ module tb_aes_key_mem;
       // Check round key 0 (first half of original key)
       tb_round = 4'h0;
       #CLK_PERIOD;
-      if (tb_round_key !== 128'h603deb1015ca71be2b73aef0857d7781) begin
-        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[0] : expected_value: 128'h603deb1015ca71be2b73aef0857d7781 actual_value: 128'h%032h", 
+      if (tb_round_key !== 128'h000102030405060708090a0b0c0d0e0f) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[0] : expected_value: 128'h000102030405060708090a0b0c0d0e0f actual_value: 128'h%032h", 
                  $time, tb_round_key);
         errors = errors + 1;
       end else begin
         $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[0] : expected_value: PASS actual_value: PASS", $time);
       end
 
-      // Check round key 1
+      // Check round key 1 (second half of input key)
       tb_round = 4'h1;
       #CLK_PERIOD;
-      if (tb_round_key !== 128'h9ba354118e6925afa51a8b5f2067fcde) begin
-        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[1] : expected_value: 128'h9ba354118e6925afa51a8b5f2067fcde actual_value: 128'h%032h", 
+      if (tb_round_key !== 128'h101112131415161718191a1b1c1d1e1f) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[1] : expected_value: 128'h101112131415161718191a1b1c1d1e1f actual_value: 128'h%032h", 
                  $time, tb_round_key);
         errors = errors + 1;
       end else begin
         $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[1] : expected_value: PASS actual_value: PASS", $time);
       end
 
+      // Check round key 2 (first generated - FIPS-197 Appendix A.3)
+      tb_round = 4'h2;
+      #CLK_PERIOD;
+      if (tb_round_key !== 128'ha573c29fa176c498a97fce93a572c09c) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[2] : expected_value: 128'ha573c29fa176c498a97fce93a572c09c actual_value: 128'h%032h", 
+                 $time, tb_round_key);
+        errors = errors + 1;
+      end else begin
+        $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[2] : expected_value: PASS actual_value: PASS", $time);
+      end
+
+      // Check round key 3
+      tb_round = 4'h3;
+      #CLK_PERIOD;
+      if (tb_round_key !== 128'h1651a8cd0244beda1a5da4c10640bade) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[3] : expected_value: 128'h1651a8cd0244beda1a5da4c10640bade actual_value: 128'h%032h", 
+                 $time, tb_round_key);
+        errors = errors + 1;
+      end else begin
+        $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[3] : expected_value: PASS actual_value: PASS", $time);
+      end
+
+      // Check round key 4
+      tb_round = 4'h4;
+      #CLK_PERIOD;
+      if (tb_round_key !== 128'hae87dff00ff11b68a68ed5fb03fc1567) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[4] : expected_value: 128'hae87dff00ff11b68a68ed5fb03fc1567 actual_value: 128'h%032h", 
+                 $time, tb_round_key);
+        errors = errors + 1;
+      end else begin
+        $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[4] : expected_value: PASS actual_value: PASS", $time);
+      end
+
+      // Check round key 5
+      tb_round = 4'h5;
+      #CLK_PERIOD;
+      if (tb_round_key !== 128'h6de1f1486fa54f9275f8eb5373b8518d) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[5] : expected_value: 128'h6de1f1486fa54f9275f8eb5373b8518d actual_value: 128'h%032h", 
+                 $time, tb_round_key);
+        errors = errors + 1;
+      end else begin
+        $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[5] : expected_value: PASS actual_value: PASS", $time);
+      end
+
+      // Check round key 6
+      tb_round = 4'h6;
+      #CLK_PERIOD;
+      if (tb_round_key !== 128'hc656827fc9a799176f294cec6cd5598b) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[6] : expected_value: 128'hc656827fc9a799176f294cec6cd5598b actual_value: 128'h%032h", 
+                 $time, tb_round_key);
+        errors = errors + 1;
+      end else begin
+        $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[6] : expected_value: PASS actual_value: PASS", $time);
+      end
+
+      // Check round key 10
+      tb_round = 4'ha;
+      #CLK_PERIOD;
+      if (tb_round_key !== 128'h7ccff71cbeb4fe5413e6bbf0d261a7df) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[10] : expected_value: 128'h7ccff71cbeb4fe5413e6bbf0d261a7df actual_value: 128'h%032h", 
+                 $time, tb_round_key);
+        errors = errors + 1;
+      end else begin
+        $display("LOG: %0t : INFO : tb_aes_key_mem : dut.round_key[10] : expected_value: PASS actual_value: PASS", $time);
+      end
+
       // Check round key 14 (final round key for AES-256)
       tb_round = 4'he;
       #CLK_PERIOD;
-      if (tb_round_key !== 128'h706c631e90d524efc40748ed0bdc3a82) begin
-        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[14] : expected_value: 128'h706c631e90d524efc40748ed0bdc3a82 actual_value: 128'h%032h", 
+      if (tb_round_key !== 128'h24fc79ccbf0979e9371ac23c6d68de36) begin
+        $display("LOG: %0t : ERROR : tb_aes_key_mem : dut.round_key[14] : expected_value: 128'h24fc79ccbf0979e9371ac23c6d68de36 actual_value: 128'h%032h", 
                  $time, tb_round_key);
         errors = errors + 1;
       end else begin

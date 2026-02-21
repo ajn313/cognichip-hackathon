@@ -1,0 +1,32 @@
+aes_sbox_sim:
+  deps:
+    - aes_sbox.v
+    - tb_aes_sbox.v
+  top: tb_aes_sbox
+
+aes_inv_sbox_sim:
+  deps:
+    - aes_inv_sbox.v
+    - tb_aes_inv_sbox.v
+  top: tb_aes_inv_sbox
+
+aes_key_mem_sim:
+  deps:
+    - aes_sbox.v
+    - aes_key_mem.v
+    - tb_aes_key_mem.v
+  top: tb_aes_key_mem
+
+aes_encipher_block_sim:
+  deps:
+    - aes_sbox.v
+    - aes_encipher_block.v
+    - tb_aes_encipher_block.v
+  top: tb_aes_encipher_block
+
+aes_decipher_block_sim:
+  deps:
+    - aes_inv_sbox.v
+    - aes_decipher_block.v
+    - tb_aes_decipher_block.v
+  top: tb_aes_decipher_block
